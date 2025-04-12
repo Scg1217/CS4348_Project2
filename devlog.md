@@ -62,3 +62,18 @@
 **Plan for this session:**
 - Perform final integration tests ensuring that all threads complete their tasks.
 - Next steps will include potential final adjustments (e.g., error checking, fine-tuning delays), cleaning up debug prints, and preparing the README for submission.
+
+## [2025-04-12 6:49]
+**Thoughts so far:**
+- Conducted final integration testing with 3 Teller threads and 50 Customer threads.
+- Verified that each customer is served, with correct sequencing:
+  - Customers enter, wait in line, get served, and exit.
+  - Tellers process transactions, request manager permission for withdrawals, and use the safe with proper semaphore controls.
+  - The printed messages adhere to the specified format.
+- Observed non-deterministic interleaving of messages due to the nature of threading. However, all resource limits are respected (e.g., maximum 2 customers in the bank, 2 tellers in the safe, and 1 teller with the manager).
+- All teller threads exit gracefully after all 50 customers are served.
+- The simulation meets the project specifications and is ready for final cleanup.
+
+**Plan for this session:**
+- Prepare a README file (to be completed in the next step) with instructions for running the simulation on the CS server.
+- Clean up any residual debug messages if necessary.
