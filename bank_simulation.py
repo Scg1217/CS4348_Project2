@@ -30,13 +30,13 @@ class Teller(threading.Thread):
         self.teller_id = teller_id
 
     def run(self):
-        # Print that the teller is ready to serve
         print("Teller {}: Ready to serve".format(self.teller_id))
         global served_customers, TOTAL_CUSTOMERS
         while True:
             # Wait for a customer to be available.
             customer = None
             with customer_condition:
+                print("Teller {} []: waiting for a customer".format(self.teller_id))
                 while len(customer_queue) == 0:
                     # If all customers have been served, exit the loop.
                     with served_lock:
@@ -54,34 +54,37 @@ class Teller(threading.Thread):
                     continue
 
             # Start processing the customer.
-            print("Teller {} [Customer {}]: Starting transaction".format(self.teller_id, customer.customer_id))
-            
-            # For a withdrawal, interact with the manager.
-            if customer.transaction_type == "withdraw":
-                print("Teller {} [Customer {}]: Waiting for manager permission".format(self.teller_id, customer.customer_id))
-                manager_sem.acquire()
-                print("Teller {} [Customer {}]: Got manager permission".format(self.teller_id, customer.customer_id))
-                time.sleep(random.uniform(0.005, 0.03))  # Simulate manager interaction delay.
-                manager_sem.release()
-                print("Teller {} [Customer {}]: Released manager".format(self.teller_id, customer.customer_id))
-
-            # Access the safe.
-            print("Teller {} [Customer {}]: Waiting for safe access".format(self.teller_id, customer.customer_id))
-            safe_sem.acquire()
-            print("Teller {} [Customer {}]: In safe, processing transaction".format(self.teller_id, customer.customer_id))
-            time.sleep(random.uniform(0.01, 0.05))  # Simulate transaction time.
-            print("Teller {} [Customer {}]: Exiting safe".format(self.teller_id, customer.customer_id))
-            safe_sem.release()
-            
-            # Signal the customer that the transaction is complete.
-            print("Teller {} [Customer {}]: Transaction complete".format(self.teller_id, customer.customer_id))
-            customer.served_event.set()
-
-            # Update the count of served customers.
-            with served_lock:
-                served_customers += 1
-            print("Teller {}: Finished serving Customer {}".format(self.teller_id, customer.customer_id))
-        
+            if customer:
+                customer.served_by = self.teller_id
+                print("Customer {} [Teller {}]: selects teller".format(customer.customer_id, self.teller_id))
+                print("Customer {} [Teller {}] introduces itself".format(customer.customer_id, self.teller_id))
+                print("Teller {} [Customer {}]: serving a customer".format(self.teller_id, customer.customer_id))
+                print("Teller {} [Customer {}]: asks for transaction".format(self.teller_id, customer.customer_id))
+                time.sleep(0.01)  # Simulate small delay
+                print("Customer {} [Teller {}]: asks for {} transaction".format(customer.customer_id, self.teller_id, customer.transaction_type))
+                print("Teller {} [Customer {}]: handling {} transaction".format(self.teller_id, customer.customer_id, customer.transaction_type))
+                if customer.transaction_type == "withdraw":
+                    print("Teller {} [Customer {}]: going to the manager".format(self.teller_id, customer.customer_id))
+                    manager_sem.acquire()
+                    print("Teller {} [Customer {}]: getting manager's permission".format(self.teller_id, customer.customer_id))
+                    time.sleep(random.uniform(0.005, 0.03))
+                    print("Teller {} [Customer {}]: got manager's permission".format(self.teller_id, customer.customer_id))
+                    manager_sem.release()
+                print("Teller {} [Customer {}]: going to safe".format(self.teller_id, customer.customer_id))
+                safe_sem.acquire()
+                print("Teller {} [Customer {}]: enter safe".format(self.teller_id, customer.customer_id))
+                time.sleep(random.uniform(0.01, 0.05))
+                print("Teller {} [Customer {}]: leaving safe".format(self.teller_id, customer.customer_id))
+                safe_sem.release()
+                if customer.transaction_type == "deposit":
+                    print("Teller {} [Customer {}]: finishes deposit transaction.".format(self.teller_id, customer.customer_id))
+                else:
+                    print("Teller {} [Customer {}]: finishes withdrawal transaction.".format(self.teller_id, customer.customer_id))
+                print("Teller {} [Customer {}]: wait for customer to leave.".format(self.teller_id, customer.customer_id))
+                customer.served_event.set()   # Signal customer that transaction is complete.
+                with served_lock:
+                    served_customers += 1
+                print("Teller {}: Finished serving Customer {}".format(self.teller_id, customer.customer_id))
         print("Teller {}: No more customers, ending session".format(self.teller_id))
 
 # Customer thread class
@@ -93,27 +96,32 @@ class Customer(threading.Thread):
         self.transaction_type = random.choice(["deposit", "withdraw"])
         # Event to be set when the transaction is complete.
         self.served_event = threading.Event()
-
+        self.served_by = None
 
     def run(self):
-        # Simulate customer arrival with a random delay (0 to 0.1 seconds)
+        # Wait a random time (simulate arrival delay).
         time.sleep(random.uniform(0.0, 0.1))
+        # Acquire the bank door semaphore (only 2 customers allowed inside).
+        print("Customer {} []: wants to perform a {} transaction".format(self.customer_id, self.transaction_type))
+        print("Customer {} []: going to bank.".format(self.customer_id))
         door_sem.acquire()
+        print("Customer {} []: entering bank.".format(self.customer_id))
+        print("Customer {} []: getting in line.".format(self.customer_id))
+        print("Customer {} []: selecting a teller.".format(self.customer_id))
         print("Customer {}: Entered the bank (Transaction: {})".format(self.customer_id, self.transaction_type))
-        # Enter the waiting line.
         with customer_condition:
             customer_queue.append(self)
-            print("Customer {}: Waiting in line".format(self.customer_id))
             customer_condition.notify()
         # Wait until a teller signals that the transaction is complete.
         self.served_event.wait()
-        print("Customer {}: Transaction complete, leaving the bank".format(self.customer_id))
-        # Release the door semaphore as the customer leaves.
+        print("Customer {} [Teller {}]: leaves teller".format(self.customer_id, self.served_by))
+        print("Customer {} []: goes to door".format(self.customer_id))
         door_sem.release()
+        print("Customer {} []: leaves the bank".format(self.customer_id))
 
 def main():
     global TOTAL_CUSTOMERS
-    # Create and start 3 teller threads
+    # Create and start teller threads.
     tellers = [Teller(i) for i in range(3)]
     for teller in tellers:
         teller.start()
@@ -135,6 +143,10 @@ def main():
     # Wait for all teller threads to finish.
     for teller in tellers:
         teller.join()
+    print("Teller 0 []: leaving for the day")
+    print("Teller 1 []: leaving for the day")
+    print("Teller 2 []: leaving for the day")
+    print("The bank closes for the day.")
 
 if __name__ == "__main__":
     main()

@@ -48,3 +48,17 @@
 - Refine the printed messages to adhere exactly to the output format if needed.
 - Next session, add further delay printouts (i.e., before and after each blocking operation) and prepare for final integration testing.
 
+## [2025-04-12 6:28]
+**Thoughts so far:**
+- Enhanced the simulation with detailed print statements following the output format:
+  - Each blocking operation (manager access, safe access, waiting in line) now shows messages both before and after the operation.
+  - Teller and Customer actions are now clearly documented with the format “THREAD_TYPE ID [Related THREAD_TYPE ID]: MSG”.
+- Verified that:
+  - For withdrawals, the teller obtains manager permission (and prints messages before, during, and after).
+  - Before entering the safe, the teller prints a request message and after processing, prints an exit message.
+  - Customer threads display arrival, wait, and leave messages.
+- The simulation was run with 3 Teller threads and 50 Customer threads, and the interleaved output reflects the intended synchronization.
+
+**Plan for this session:**
+- Perform final integration tests ensuring that all threads complete their tasks.
+- Next steps will include potential final adjustments (e.g., error checking, fine-tuning delays), cleaning up debug prints, and preparing the README for submission.
