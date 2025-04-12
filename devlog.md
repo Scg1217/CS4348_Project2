@@ -26,3 +26,25 @@
 **Plan for this session:**
 - Verify that the simulation runs without errors on Python 2.7.5.
 - Prepare to add shared resources (semaphores) and basic interaction between the threads in the next session.
+
+## [2025-04-12 5:44]
+**Thoughts so far:**
+- Added shared resources to the simulation:
+  - Semaphores for the bank door (`door_sem`), safe (`safe_sem`), and manager (`manager_sem`).
+  - A waiting queue (`customer_queue`) protected by a condition variable (`customer_condition`).
+- Modified Teller threads to:
+  - Wait for customers using the condition variable.
+  - For withdrawal transactions, first acquire permission from the manager.
+  - Then acquire the safe semaphore to process the transaction.
+  - Signal the Customer using an Event when their transaction is complete.
+- Modified Customer threads to:
+  - Acquire the door semaphore to enter the bank.
+  - Join the waiting queue and wait for service.
+  - Release the door when leaving.
+- Tested with 50 Customer threads. Observed expected interleaving messages (e.g., Teller waiting for customers, manager interaction, safe usage, and customers leaving).
+- Minor non-deterministic ordering is present (expected with multithreading).
+
+**Plan for this session:**
+- Refine the printed messages to adhere exactly to the output format if needed.
+- Next session, add further delay printouts (i.e., before and after each blocking operation) and prepare for final integration testing.
+
