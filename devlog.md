@@ -15,3 +15,14 @@
 - Record this planning phase in the devlog.
 - Commit the devlog and initial project files.
 
+## [2025-04-12 5:10]
+**Thoughts so far:**
+- Created the initial `bank_simulation.py` file with skeleton classes for Teller and Customer.
+- Defined basic behavior:
+  - Each Teller prints a “ready” message and later an “ending session” message.
+  - Each Customer simulates arrival, waits in line, and then prints a leaving message.
+- The initial test with 3 Teller threads and 5 Customer threads produced the expected output.
+
+**Plan for this session:**
+- Verify that the simulation runs without errors on Python 2.7.5.
+- Prepare to add shared resources (semaphores) and basic interaction between the threads in the next session.
