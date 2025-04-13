@@ -77,3 +77,18 @@
 **Plan for this session:**
 - Prepare a README file (to be completed in the next step) with instructions for running the simulation on the CS server.
 - Clean up any residual debug messages if necessary.
+
+## [2025-04-12 9:10] – Final Submission
+**Thoughts so far:**
+- Final integration testing confirms that the bank simulation produces output that closely matches the sample run provided in class.
+- Tellers print messages such as "Teller 0 []: ready to serve" and "Teller 0 []: waiting for a customer".
+- Customers announce their intended transactions, then print messages for "going to bank", "entering bank", "getting in line", "selecting a teller", and finally, "leaving teller", "goes to door", and "leaves the bank".
+- Teller and customer interactions (including manager and safe access) are synchronized through semaphores and a condition variable.
+- The simulation runs successfully on the CS server (Python 2.7.5) and meets all project specifications.
+
+**Plan for this session:**
+- Finalize the README to document the project.
+- Ensure all files are committed to Git.
+- Clean up any residual debug statements.
+- Zip the repository and prepare for final submission.
+

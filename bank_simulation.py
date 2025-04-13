@@ -30,7 +30,7 @@ class Teller(threading.Thread):
         self.teller_id = teller_id
 
     def run(self):
-        print("Teller {}: Ready to serve".format(self.teller_id))
+        print("Teller {} []: Ready to serve".format(self.teller_id))
         global served_customers, TOTAL_CUSTOMERS
         while True:
             # Wait for a customer to be available.
@@ -121,14 +121,15 @@ class Customer(threading.Thread):
 
 def main():
     global TOTAL_CUSTOMERS
+    # Create 50 customer threads.
+    customer_list = [Customer(i) for i in range(50)]
+    TOTAL_CUSTOMERS = len(customer_list)
+    
     # Create and start teller threads.
     tellers = [Teller(i) for i in range(3)]
     for teller in tellers:
         teller.start()
 
-    # Create 50 customer threads.
-    customer_list = [Customer(i) for i in range(50)]
-    TOTAL_CUSTOMERS = len(customer_list)
     for customer in customer_list:
         customer.start()
 
